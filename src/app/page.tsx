@@ -1,32 +1,45 @@
 'use client';
 import { useState, useEffect } from 'react';
-import { Container, Row, Col, Form, Button, Alert } from 'react-bootstrap';
 import TaskList from '@/components/TaskList';
 import VoiceButton from '@/components/VoiceButton';
 import { Task } from '@/types';
 import { parseTaskWithDate } from '@/utils/dateParser';
+
+interface StoredTask {
+  id: string;
+  text: string;
+  completed: boolean;
+  createdAt: string;
+  dueDate?: string;
+}
 
 export default function Home() {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [newTaskText, setNewTaskText] = useState('');
   const [alert, setAlert] = useState<{ type: string; message: string } | null>(null);
 
-  // Load tasks from localStorage on component mount
   useEffect(() => {
     const savedTasks = localStorage.getItem('voice-todoist-tasks');
     if (savedTasks) {
-      const parsed = JSON.parse(savedTasks);
-      setTasks(parsed.map((task: any) => ({
-        ...task,
-        createdAt: new Date(task.createdAt),
-        dueDate: task.dueDate ? new Date(task.dueDate) : undefined
-      })));
+      try {
+        const parsed: StoredTask[] = JSON.parse(savedTasks);
+        setTasks(parsed.map((task) => ({
+          ...task,
+          createdAt: new Date(task.createdAt),
+          dueDate: task.dueDate ? new Date(task.dueDate) : undefined
+        })));
+      } catch (error) {
+        console.error('Error loading tasks:', error);
+      }
     }
   }, []);
 
-  // Save tasks to localStorage whenever tasks change
   useEffect(() => {
-    localStorage.setItem('voice-todoist-tasks', JSON.stringify(tasks));
+    try {
+      localStorage.setItem('voice-todoist-tasks', JSON.stringify(tasks));
+    } catch (error) {
+      console.error('Error saving tasks:', error);
+    }
   }, [tasks]);
 
   const addTask = (text: string) => {
@@ -70,40 +83,46 @@ export default function Home() {
     setTimeout(() => setAlert(null), 3000);
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     addTask(newTaskText);
   };
 
   return (
-    <Container className="py-4">
-      <Row>
-        <Col>
+    <div className="container py-4">
+      <div className="row">
+        <div className="col">
           <h1 className="text-center mb-4">Voice Todoist Clone</h1>
           
           {alert && (
-            <Alert variant={alert.type} dismissible onClose={() => setAlert(null)}>
+            <div className={`alert alert-${alert.type} alert-dismissible`}>
               {alert.message}
-            </Alert>
+              <button
+                type="button"
+                className="btn-close"
+                onClick={() => setAlert(null)}
+              ></button>
+            </div>
           )}
 
-          <Form onSubmit={handleSubmit} className="mb-4">
-            <Row>
-              <Col xs={8} sm={9}>
-                <Form.Control
+          <form onSubmit={handleSubmit} className="mb-4">
+            <div className="row">
+              <div className="col-8 col-sm-9">
+                <input
                   type="text"
+                  className="form-control"
                   placeholder="Add a new task..."
                   value={newTaskText}
                   onChange={(e) => setNewTaskText(e.target.value)}
                 />
-              </Col>
-              <Col xs={4} sm={3}>
-                <Button type="submit" variant="primary" className="w-100">
+              </div>
+              <div className="col-4 col-sm-3">
+                <button type="submit" className="btn btn-primary w-100">
                   Add Task
-                </Button>
-              </Col>
-            </Row>
-          </Form>
+                </button>
+              </div>
+            </div>
+          </form>
 
           {tasks.length > 0 ? (
             <TaskList
@@ -112,14 +131,14 @@ export default function Home() {
               onDeleteTask={deleteTask}
             />
           ) : (
-            <Alert variant="info" className="text-center">
+            <div className="alert alert-info text-center">
               No tasks yet. Add your first task above or use the voice button!
-            </Alert>
+            </div>
           )}
 
           <VoiceButton onVoiceResult={handleVoiceResult} />
-        </Col>
-      </Row>
-    </Container>
+        </div>
+      </div>
+    </div>
   );
 }

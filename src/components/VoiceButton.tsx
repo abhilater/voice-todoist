@@ -1,6 +1,6 @@
 'use client';
-import { useState } from 'react';
-import { Button } from 'react-bootstrap';
+import { useState, useEffect } from 'react';
+import { SpeechRecognition, SpeechRecognitionEvent } from '@/types';
 
 interface VoiceButtonProps {
   onVoiceResult: (text: string) => void;
@@ -8,16 +8,18 @@ interface VoiceButtonProps {
 
 export default function VoiceButton({ onVoiceResult }: VoiceButtonProps) {
   const [isListening, setIsListening] = useState(false);
-  const [isSupported, setIsSupported] = useState(true);
+  const [isSupported, setIsSupported] = useState(false);
+
+  useEffect(() => {
+    const supported = 'SpeechRecognition' in window || 'webkitSpeechRecognition' in window;
+    setIsSupported(supported);
+  }, []);
 
   const startListening = () => {
-    if (!('SpeechRecognition' in window) && !('webkitSpeechRecognition' in window)) {
-      setIsSupported(false);
-      return;
-    }
+    if (!isSupported) return;
 
-    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-    const recognition = new SpeechRecognition();
+    const SpeechRecognitionConstructor = window.SpeechRecognition || window.webkitSpeechRecognition;
+    const recognition: SpeechRecognition = new SpeechRecognitionConstructor();
 
     recognition.continuous = false;
     recognition.interimResults = false;
@@ -27,7 +29,7 @@ export default function VoiceButton({ onVoiceResult }: VoiceButtonProps) {
       setIsListening(true);
     };
 
-    recognition.onresult = (event) => {
+    recognition.onresult = (event: SpeechRecognitionEvent) => {
       const transcript = event.results[0][0].transcript;
       onVoiceResult(transcript);
     };
@@ -48,13 +50,13 @@ export default function VoiceButton({ onVoiceResult }: VoiceButtonProps) {
   }
 
   return (
-    <Button
-      className="voice-button"
-      variant={isListening ? "danger" : "primary"}
+    <button
+      className={`btn voice-button ${isListening ? 'btn-danger' : 'btn-primary'}`}
       onClick={startListening}
       disabled={isListening}
+      type="button"
     >
       🎤
-    </Button>
+    </button>
   );
 }
