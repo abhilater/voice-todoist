@@ -6,10 +6,16 @@ export interface Task {
   dueDate?: Date;
 }
 
-// Proper Speech Recognition types
-interface SpeechRecognitionResult {
+// Proper Speech Recognition types that support indexing
+interface SpeechRecognitionAlternative {
   readonly confidence: number;
   readonly transcript: string;
+}
+
+interface SpeechRecognitionResult {
+  readonly length: number;
+  item(index: number): SpeechRecognitionAlternative;
+  [index: number]: SpeechRecognitionAlternative;
 }
 
 interface SpeechRecognitionResultList {
