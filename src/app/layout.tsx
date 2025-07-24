@@ -3,7 +3,7 @@ import './globals.css'
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
-  title: 'Voice Todoist Clone',
+  title: 'Voice Todoist',
   description: 'A voice-powered to-do list application',
 }
 

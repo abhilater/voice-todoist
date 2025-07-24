@@ -1,6 +1,6 @@
 import * as chrono from 'chrono-node';
 
-export function parseTaskWithDate(text: string): { taskText: string; dueDate?: Date } {
+export function parseTaskWithDate(text: string): { title: string; dueDate?: Date } {
   const parsed = chrono.parse(text);
   
   if (parsed.length > 0) {
@@ -8,13 +8,13 @@ export function parseTaskWithDate(text: string): { taskText: string; dueDate?: D
     const dueDate = dateResult.start.date();
     
     // Remove the date text from the task
-    const taskText = text.replace(dateResult.text, '').trim();
+    const title = text.replace(dateResult.text, '').trim();
     
     return {
-      taskText: taskText || text, // Fallback to original text if empty
+      title: title || text, // Fallback to original text if empty
       dueDate
     };
   }
   
-  return { taskText: text };
+  return { title: text };
 }

@@ -7,7 +7,8 @@ import { parseTaskWithDate } from '@/utils/dateParser';
 
 interface StoredTask {
   id: string;
-  text: string;
+  title: string;
+  description?: string;
   completed: boolean;
   createdAt: string;
   dueDate?: string;
@@ -15,7 +16,7 @@ interface StoredTask {
 
 export default function Home() {
   const [tasks, setTasks] = useState<Task[]>([]);
-  const [newTaskText, setNewTaskText] = useState('');
+  const [newTaskTitle, setNewTaskTitle] = useState('');
   const [alert, setAlert] = useState<{ type: string; message: string } | null>(null);
 
   useEffect(() => {
@@ -42,21 +43,21 @@ export default function Home() {
     }
   }, [tasks]);
 
-  const addTask = (text: string) => {
-    if (!text.trim()) return;
+  const addTask = (title: string) => {
+    if (!title.trim()) return;
 
-    const { taskText, dueDate } = parseTaskWithDate(text);
+    const { taskText, dueDate } = parseTaskWithDate(title);
     
     const newTask: Task = {
       id: Date.now().toString(),
-      text: taskText,
+      title: taskText,
       completed: false,
       createdAt: new Date(),
       dueDate
     };
 
     setTasks(prev => [newTask, ...prev]);
-    setNewTaskText('');
+    setNewTaskTitle('');
     
     if (dueDate) {
       showAlert('success', `Task added with due date: ${dueDate.toLocaleDateString()}`);
@@ -73,6 +74,12 @@ export default function Home() {
     setTasks(prev => prev.filter(task => task.id !== id));
   };
 
+  const updateTask = (id: string, newTitle: string, newDescription: string, newDueDate: Date) => {
+    setTasks(prev => prev.map(task =>
+      task.id === id ? { ...task, title: newTitle, description: newDescription, dueDate: newDueDate } : task
+    ));
+  };
+
   const handleVoiceResult = (text: string) => {
     addTask(text);
     showAlert('info', `Voice input: "${text}"`);
@@ -85,7 +92,7 @@ export default function Home() {
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    addTask(newTaskText);
+    addTask(newTaskTitle);
   };
 
   return (
@@ -112,8 +119,8 @@ export default function Home() {
                   type="text"
                   className="form-control"
                   placeholder="Add a new task..."
-                  value={newTaskText}
-                  onChange={(e) => setNewTaskText(e.target.value)}
+                  value={newTaskTitle}
+                  onChange={(e) => setNewTaskTitle(e.target.value)}
                 />
               </div>
               <div className="col-4 col-sm-3">
@@ -129,6 +136,7 @@ export default function Home() {
               tasks={tasks}
               onToggleComplete={toggleTaskComplete}
               onDeleteTask={deleteTask}
+              onUpdateTask={updateTask}
             />
           ) : (
             <div className="alert alert-info text-center">
