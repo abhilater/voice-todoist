@@ -67,7 +67,7 @@ export default function TaskList({ tasks, onToggleComplete, onDeleteTask, onUpda
               <InputGroup className="mb-3">
                 <FormControl
                   name="description"
-                  defaultValue={task.description}
+                  defaultValue={task.description || ''}
                   as="textarea"
                   aria-label="Task description"
                 />

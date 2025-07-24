@@ -46,21 +46,21 @@ export default function Home() {
   const addTask = (title: string) => {
     if (!title.trim()) return;
 
-    const { taskText, dueDate } = parseTaskWithDate(title);
+    const parsedTask = parseTaskWithDate(title);
     
     const newTask: Task = {
       id: Date.now().toString(),
-      title: taskText,
+      title: parsedTask.title,
       completed: false,
       createdAt: new Date(),
-      dueDate
+      dueDate: parsedTask.dueDate
     };
 
     setTasks(prev => [newTask, ...prev]);
     setNewTaskTitle('');
     
-    if (dueDate) {
-      showAlert('success', `Task added with due date: ${dueDate.toLocaleDateString()}`);
+    if (parsedTask.dueDate) {
+      showAlert('success', `Task added with due date: ${parsedTask.dueDate.toLocaleDateString()}`);
     }
   };
 
